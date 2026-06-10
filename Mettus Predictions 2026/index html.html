@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Mettus | FIFA World Cup 2026 Employee Predictor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Oswald:wght@500;700&display=swap');
+
+  :root {
+    --teal: #00C2A8;
+    --teal-dark: #009B87;
+    --gold: #F0A500;
+    --gold-light: #FFD166;
+    --maroon: #8B1A2B;
+    --bg-deep: #050D1A;
+    --bg-card: #0B1829;
+    --bg-card2: #0F2033;
+    --border: rgba(0,194,168,0.18);
+    --text: #E8F4F2;
+    --text-muted: #7BA6A0;
+    --rank1: #FFD700;
+    --rank2: #C0C0C0;
+    --rank3: #CD7F32;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: linear-gradient(rgba(0,194,168,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(0,194,168,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+  
+  header {
+    background: linear-gradient(180deg, rgba(0,10,20,0.98) 0%, rgba(5,13,26,0.92) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { display: flex; gap: 3px; align-items: flex-end; }
+  .logo-icon span { display: block; width: 4px; background: var(--teal); border-radius: 2px; }
+  .logo-icon span:nth-child(1) { height: 10px; }
+  .logo-icon span:nth-child(2) { height: 16px; }
+  .logo-icon span:nth-child(3) { height: 22px; }
+  .logo-icon span:nth-child(4) { height: 16px; }
+  .logo-text { font-family: 'Oswald', sans-serif; font-size: 20px; font-weight: 700; color: #fff; }
+  .header-badge { font-size: 11px; font-weight: 600; color: var(--teal); background: rgba(0,194,168,0.1);
+    border: 1px solid rgba(0,194,168,0.25); border-radius: 20px; padding: 4px 12px; }
+  .nav-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .nav-tab { background: none; border: 1px solid transparent; color: var(--text-muted);
+    font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: 6px; cursor: pointer; }
+  .nav-tab.active, .nav-tab:hover { color: var(--teal); border-color: var(--border); background: rgba(0,194,168,0.07); }
+  
+  .hero { text-align: center; padding: 40px 20px 30px; }
+  .hero-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 3px; color: var(--gold); margin-bottom: 14px; }
+  .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(42px, 8vw, 70px); letter-spacing: 2px; color: #fff; }
+  .hero-title span { color: var(--teal); }
+  
+  .section { display: none; }
+  .section.active { display: block; }
+  
+  .day-group { margin-bottom: 32px; }
+  .day-header { font-family: 'Oswald', sans-serif; font-size: 20px; color: var(--gold); border-left: 4px solid var(--gold); padding-left: 12px; margin-bottom: 16px; margin-top: 8px; }
+  
+  .match-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; transition: all 0.2s; }
+  .match-meta { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 12px; }
+  .match-stage { color: var(--gold); background: rgba(240,165,0,.12); padding: 2px 10px; border-radius: 20px; font-size: 10px; }
+  .match-teams { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .team-side { text-align: center; flex: 1; min-width: 100px; }
+  .team-flag { font-size: 28px; }
+  .team-name { font-family: 'Oswald', sans-serif; font-size: 14px; }
+  .score-inputs { display: flex; align-items: center; gap: 8px; background: var(--bg-card2); padding: 8px 12px; border-radius: 40px; }
+  .score-input { width: 55px; height: 48px; text-align: center; font-size: 20px; font-weight: 700; background: var(--bg-deep); border: 1px solid var(--border); border-radius: 8px; color: var(--teal); }
+  .score-sep { font-size: 22px; font-weight: 700; }
+  
+  .btn-primary { background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: #000; border: none; border-radius: 10px; padding: 12px 24px; font-weight: 700; cursor: pointer; width: 100%; font-size: 16px; margin-top: 10px; }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 20px; }
+  .card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); font-family: 'Oswald', sans-serif; }
+  .card-body { padding: 18px; }
+  
+  .pred-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .pred-score { font-weight: 700; color: var(--teal); }
+  
+  .lb-table { width: 100%; border-collapse: collapse; }
+  .lb-table th, .lb-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  .lb-table th { color: var(--text-muted); font-size: 11px; }
+  .pts-cell { color: var(--teal); font-weight: 700; font-size: 18px; }
+  
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--teal); color: #000; padding: 12px 24px; border-radius: 40px; font-weight: 600; opacity: 0; transition: 0.3s; z-index: 999; }
+  .toast.show { opacity: 1; }
+  
+  @media (max-width: 700px) { .match-teams { flex-direction: column; } .score-inputs { order: 3; margin-top: 8px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap header-inner">
+    <div class="logo"><div class="logo-icon"><span></span><span></span><span></span><span></span></div><span class="logo-text">Mettus</span><span class="header-badge">⚽ World Cup 2026</span></div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showSection('predict')">Predict</button>
+      <button class="nav-tab" onclick="showSection('leaderboard')">Leaderboard</button>
+      <button class="nav-tab" onclick="showSection('myprogress')">My Progress</button>
+      <button class="nav-tab" onclick="showSection('rules')">Rules</button>
+    </div>
+  </div>
+</header>
+
+<div class="hero"><div class="hero-eyebrow">FIFA World Cup 2026</div><h1 class="hero-title">Employee <span>Score Predictor</span></h1></div>
+
+<!-- PREDICT SECTION -->
+<div class="section active" id="section-predict">
+  <div class="wrap">
+    <div class="card">
+      <div class="card-header">👤 Your Details</div>
+      <div class="card-body" style="display: flex; gap: 16px; flex-wrap: wrap;">
+        <input type="text" id="empName" placeholder="Full Name" style="flex:1; background: var(--bg-deep); border:1px solid var(--border); padding: 10px; border-radius: 8px; color: white;">
+        <select id="empDept" style="flex:1; background: var(--bg-deep); border:1px solid var(--border); padding: 10px; border-radius: 8px; color: white;">
+          <option value="">Select Department</option>
+          <option>Finance</option><option>HR</option><option>MIE Assessment</option><option>Operations</option><option>Sales & Marketing</option><option>Technology</option><option>Legal</option>
+        </select>
+      </div>
+    </div>
+    <div id="matchesByDay"></div>
+    <button class="btn-primary" onclick="submitAllPredictions()">📤 Submit All Predictions</button>
+  </div>
+</div>
+
+<!-- LEADERBOARD SECTION -->
+<div class="section" id="section-leaderboard">
+  <div class="wrap">
+    <div class="card"><div class="card-header">🏆 Leaderboard</div><div class="card-body"><table class="lb-table" id="leaderboardTable"><thead><tr><th>Rank</th><th>Name</th><th>Dept</th><th>Points</th><th>Exact</th></tr></thead><tbody id="lbBody"></tbody></table></div></div>
+  </div>
+</div>
+
+<!-- MY PROGRESS -->
+<div class="section" id="section-myprogress">
+  <div class="wrap">
+    <div class="card"><div class="card-header">📊 My Performance</div><div class="card-body" id="myProgressPanel"></div></div>
+  </div>
+</div>
+
+<!-- RULES -->
+<div class="section" id="section-rules">
+  <div class="wrap"><div class="card"><div class="card-header">⚽ Scoring Rules</div><div class="card-body"><ul style="list-style: none;"><li>🎯 Exact Score: 5 pts</li><li>📊 Winner + Goal Diff: 4 pts</li><li>✅ Correct Winner: 3 pts</li><li>➖ Correct Draw: 3 pts</li><li>🎲 One Team's Goals: 1 pt</li><li>❌ Incorrect: 0 pts</li></ul></div></div></div>
+</div>
+
+<div class="toast" id="toastMsg"></div>
+
+<script>
+// ======================== COMPLETE MATCH SCHEDULE (YOUR TEAMS ONLY) ========================
+const allMatches = [
+  { id: 1, home: "Mexico", homeFlag: "🇲🇽", away: "South Africa", awayFlag: "🇿🇦", date: "2026-06-11", time: "21:00", stage: "Group A" },
+  { id: 2, home: "South Korea", homeFlag: "🇰🇷", away: "Czech Republic", awayFlag: "🇨🇿", date: "2026-06-12", time: "04:00", stage: "Group A" },
+  { id: 3, home: "Canada", homeFlag: "🇨🇦", away: "Bosnia", awayFlag: "🇧🇦", date: "2026-06-12", time: "21:00", stage: "Group B" },
+  { id: 4, home: "USA", homeFlag: "🇺🇸", away: "Paraguay", awayFlag: "🇵🇾", date: "2026-06-13", time: "03:00", stage: "Group D" },
+  { id: 5, home: "Brazil", homeFlag: "🇧🇷", away: "Morocco", awayFlag: "🇲🇦", date: "2026-06-14", time: "00:00", stage: "Group C" },
+  { id: 6, home: "Australia", homeFlag: "🇦🇺", away: "Türkiye", awayFlag: "🇹🇷", date: "2026-06-14", time: "06:00", stage: "Group D" },
+  { id: 7, home: "Germany", homeFlag: "🇩🇪", away: "Curaçao", awayFlag: "🇨🇼", date: "2026-06-14", time: "19:00", stage: "Group E" },
+  { id: 8, home: "Netherlands", homeFlag: "🇳🇱", away: "Japan", awayFlag: "🇯🇵", date: "2026-06-14", time: "22:00", stage: "Group F" },
+  { id: 9, home: "Ivory Coast", homeFlag: "🇨🇮", away: "Ecuador", awayFlag: "🇪🇨", date: "2026-06-15", time: "01:00", stage: "Group E" },
+  { id: 10, home: "Spain", homeFlag: "🇪🇸", away: "Cabo Verde", awayFlag: "🇨🇻", date: "2026-06-15", time: "18:00", stage: "Group H" },
+  { id: 11, home: "Belgium", homeFlag: "🇧🇪", away: "Egypt", awayFlag: "🇪🇬", date: "2026-06-15", time: "21:00", stage: "Group G" },
+  { id: 12, home: "Saudi Arabia", homeFlag: "🇸🇦", away: "Uruguay", awayFlag: "🇺🇾", date: "2026-06-16", time: "00:00", stage: "Group H" },
+  { id: 13, home: "France", homeFlag: "🇫🇷", away: "Senegal", awayFlag: "🇸🇳", date: "2026-06-16", time: "21:00", stage: "Group I" },
+  { id: 14, home: "Argentina", homeFlag: "🇦🇷", away: "Algeria", awayFlag: "🇩🇿", date: "2026-06-17", time: "03:00", stage: "Group J" },
+  { id: 15, home: "Portugal", homeFlag: "🇵🇹", away: "DR Congo", awayFlag: "🇨🇩", date: "2026-06-17", time: "19:00", stage: "Group K" },
+  { id: 16, home: "England", homeFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", away: "Croatia", awayFlag: "🇭🇷", date: "2026-06-17", time: "22:00", stage: "Group L" },
+  { id: 17, home: "Czech Republic", homeFlag: "🇨🇿", away: "South Africa", awayFlag: "🇿🇦", date: "2026-06-18", time: "18:00", stage: "Group A" },
+  { id: 18, home: "Switzerland", homeFlag: "🇨🇭", away: "Bosnia", awayFlag: "🇧🇦", date: "2026-06-18", time: "21:00", stage: "Group B" },
+  { id: 19, home: "Mexico", homeFlag: "🇲🇽", away: "South Korea", awayFlag: "🇰🇷", date: "2026-06-19", time: "03:00", stage: "Group A" },
+  { id: 20, home: "USA", homeFlag: "🇺🇸", away: "Australia", awayFlag: "🇦🇺", date: "2026-06-19", time: "21:00", stage: "Group D" },
+  { id: 21, home: "Brazil", homeFlag: "🇧🇷", away: "Haiti", awayFlag: "🇭🇹", date: "2026-06-20", time: "02:30", stage: "Group C" },
+  { id: 22, home: "Netherlands", homeFlag: "🇳🇱", away: "Sweden", awayFlag: "🇸🇪", date: "2026-06-20", time: "19:00", stage: "Group F" },
+  { id: 23, home: "Germany", homeFlag: "🇩🇪", away: "Ivory Coast", awayFlag: "🇨🇮", date: "2026-06-20", time: "22:00", stage: "Group E" },
+  { id: 24, home: "Spain", homeFlag: "🇪🇸", away: "Saudi Arabia", awayFlag: "🇸🇦", date: "2026-06-21", time: "18:00", stage: "Group H" },
+  { id: 25, home: "Belgium", homeFlag: "🇧🇪", away: "Iran", awayFlag: "🇮🇷", date: "2026-06-21", time: "21:00", stage: "Group G" },
+  { id: 26, home: "Uruguay", homeFlag: "🇺🇾", away: "Cabo Verde", awayFlag: "🇨🇻", date: "2026-06-22", time: "00:00", stage: "Group H" },
+  { id: 27, home: "Argentina", homeFlag: "🇦🇷", away: "Austria", awayFlag: "🇦🇹", date: "2026-06-22", time: "19:00", stage: "Group J" },
+  { id: 28, home: "France", homeFlag: "🇫🇷", away: "Iraq", awayFlag: "🇮🇶", date: "2026-06-22", time: "23:00", stage: "Group I" },
+  { id: 29, home: "Portugal", homeFlag: "🇵🇹", away: "Uzbekistan", awayFlag: "🇺🇿", date: "2026-06-23", time: "19:00", stage: "Group K" },
+  { id: 30, home: "England", homeFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", away: "Ghana", awayFlag: "🇬🇭", date: "2026-06-23", time: "22:00", stage: "Group L" },
+  { id: 31, home: "South Africa", homeFlag: "🇿🇦", away: "South Korea", awayFlag: "🇰🇷", date: "2026-06-25", time: "03:00", stage: "Group A" },
+  { id: 32, home: "Japan", homeFlag: "🇯🇵", away: "Sweden", awayFlag: "🇸🇪", date: "2026-06-26", time: "01:00", stage: "Group F" },
+  { id: 33, home: "Senegal", homeFlag: "🇸🇳", away: "Iraq", awayFlag: "🇮🇶", date: "2026-06-26", time: "21:00", stage: "Group I" },
+  { id: 34, home: "Morocco", homeFlag: "🇲🇦", away: "Haiti", awayFlag: "🇭🇹", date: "2026-06-25", time: "00:00", stage: "Group C" },
+  { id: 35, home: "Egypt", homeFlag: "🇪🇬", away: "Iran", awayFlag: "🇮🇷", date: "2026-06-27", time: "05:00", stage: "Group G" },
+  { id: 36, home: "Croatia", homeFlag: "🇭🇷", away: "Ghana", awayFlag: "🇬🇭", date: "2026-06-27", time: "23:00", stage: "Group L" }
+];
+
+// Load from localStorage
+let allEmployees = JSON.parse(localStorage.getItem("mettusEmployees")) || [];
+let allPredictions = JSON.parse(localStorage.getItem("mettusPredictions")) || {};
+
+function saveData() {
+  localStorage.setItem("mettusEmployees", JSON.stringify(allEmployees));
+  localStorage.setItem("mettusPredictions", JSON.stringify(allPredictions));
+}
+
+function getOrCreateEmployee(name, dept) {
+  let emp = allEmployees.find(e => e.name.toLowerCase() === name.toLowerCase());
+  if (!emp && name) {
+    emp = { name, dept, totalPoints: 0, exactCount: 0 };
+    allEmployees.push(emp);
+    saveData();
+  }
+  return emp;
+}
+
+function renderMatches() {
+  const container = document.getElementById("matchesByDay");
+  const grouped = {};
+  allMatches.forEach(m => { const day = m.date; if (!grouped[day]) grouped[day] = []; grouped[day].push(m); });
+  let html = "";
+  for (let [day, matches] of Object.entries(grouped)) {
+    html += `<div class="day-group"><div class="day-header">📅 ${new Date(day).toDateString()}</div>`;
+    matches.forEach(m => {
+      const saved = allPredictions[m.id] || {};
+      html += `
+        <div class="match-card">
+          <div class="match-meta"><span>${m.time} SAST</span><span class="match-stage">${m.stage}</span></div>
+          <div class="match-teams">
+            <div class="team-side"><span class="team-flag">${m.homeFlag}</span><div class="team-name">${m.home}</div></div>
+            <div class="score-inputs">
+              <input type="number" class="score-input" id="h_${m.id}" value="${saved.home || ''}" placeholder="0" min="0" max="20" style="width:60px;">
+              <span class="score-sep">:</span>
+              <input type="number" class="score-input" id="a_${m.id}" value="${saved.away || ''}" placeholder="0" min="0" max="20" style="width:60px;">
+            </div>
+            <div class="team-side"><span class="team-flag">${m.awayFlag}</span><div class="team-name">${m.away}</div></div>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function submitAllPredictions() {
+  const name = document.getElementById("empName").value.trim();
+  const dept = document.getElementById("empDept").value;
+  if (!name || !dept) { showToast("❌ Please enter name & department"); return; }
+  
+  const emp = getOrCreateEmployee(name, dept);
+  let newPreds = {};
+  let count = 0;
+  allMatches.forEach(m => {
+    const h = parseInt(document.getElementById(`h_${m.id}`)?.value);
+    const a = parseInt(document.getElementById(`a_${m.id}`)?.value);
+    if (!isNaN(h) && !isNaN(a)) {
+      newPreds[m.id] = { home: h, away: a, matchId: m.id };
+      count++;
+    }
+  });
+  if (count === 0) { showToast("⚠️ Make at least one prediction"); return; }
+  
+  // Save predictions under this employee
+  if (!allPredictions[emp.name]) allPredictions[emp.name] = {};
+  Object.assign(allPredictions[emp.name], newPreds);
+  saveData();
+  
+  // Update points (simulated for demo - in real use you'd compare with actual results)
+  updateEmployeePoints(emp);
+  
+  showToast(`✅ ${count} predictions saved for ${emp.name}!`);
+  renderMyProgress(emp.name);
+  renderLeaderboard();
+}
+
+function updateEmployeePoints(emp) {
+  // For demo: just assign random points to show movement - replace with real logic later
+  const preds = allPredictions[emp.name] || {};
+  let total = 0, exact = 0;
+  Object.values(preds).forEach(p => {
+    let pts = Math.floor(Math.random() * 5); // simulate points
+    total += pts;
+    if (pts === 5) exact++;
+  });
+  emp.totalPoints = total;
+  emp.exactCount = exact;
+  saveData();
+}
+
+function renderLeaderboard() {
+  const sorted = [...allEmployees].sort((a,b) => b.totalPoints - a.totalPoints);
+  const tbody = document.getElementById("lbBody");
+  tbody.innerHTML = sorted.map((e, i) => `
+    <tr><td>${i+1}</td><td>${e.name}</td><td>${e.dept}</td><td class="pts-cell">${e.totalPoints}</td><td>${e.exactCount}</td></tr>
+  `).join("");
+}
+
+function renderMyProgress(name) {
+  const panel = document.getElementById("myProgressPanel");
+  const emp = allEmployees.find(e => e.name.toLowerCase() === name.toLowerCase());
+  if (!emp) { panel.innerHTML = "<p>Submit predictions first</p>"; return; }
+  const myPreds = allPredictions[emp.name] || {};
+  let html = `<h3>${emp.name}</h3><p>🏆 Total Points: ${emp.totalPoints} | 🎯 Exact Scores: ${emp.exactCount}</p><div style="margin-top:16px;"><strong>Your Predictions:</strong>`;
+  for (let [mid, p] of Object.entries(myPreds)) {
+    const match = allMatches.find(m => m.id == mid);
+    if (match) html += `<div class="pred-row"><span>${match.homeFlag} ${match.home} vs ${match.away} ${match.awayFlag}</span><span class="pred-score">${p.home} - ${p.away}</span></div>`;
+  }
+  html += `</div>`;
+  panel.innerHTML = html;
+}
+
+function showToast(msg) { const t = document.getElementById("toastMsg"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3000); }
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`section-${id}`).classList.add('active');
+  if (id === 'leaderboard') renderLeaderboard();
+  if (id === 'myprogress') {
+    const name = document.getElementById("empName").value.trim();
+    if (name) renderMyProgress(name); else showToast("Enter your name first");
+  }
+}
+
+renderMatches();
+renderLeaderboard();
+</script>
+</body>
+</html>
